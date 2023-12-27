@@ -16,23 +16,25 @@ const { SoundCloudPlugin } = require("@distube/soundcloud");
 const { YtDlpPlugin } = require("@distube/yt-dlp");
 const { getBasicEmbed } = require("./embedCreator");
 const distube = new DisTube(client, {
-    leaveOnStop: false,
-    emitNewSongOnly: true,
-    emitAddSongWhenCreatingQueue: false,
-    emitAddListWhenCreatingQueue: false,
-    plugins: [new DeezerPlugin(), new SpotifyPlugin({ emitEventsAfterFetching: true }), new SoundCloudPlugin(), new YtDlpPlugin({ update: true })]
+    nsfw: true,
+    leaveOnEmpty: true,
+    leaveOnFinish: true,
+    leaveOnStop: true,
+    savePreviousSongs: true,
+    plugins: [new DeezerPlugin(), new SpotifyPlugin({ emitEventsAfterFetching: true }), new SoundCloudPlugin(), new YtDlpPlugin({ update: false })]
 });
 
 client.on(Events.InteractionCreate, async (int) => {
     if (!int.user.bot && int.isCommand){
         const command = client.commandsInfo.get(int.commandName);
+        await int.deferReply();
         if (command){
             try{
-                await commands.execute(client, int);
+                await command.execute(client, int);
             }
             catch(err){
-                await int.reply({ embeds: [getBasicEmbed(client, "error", "Something feels wrong", `While executing ${int.commandName} something happened.\nMaybe it's just your luck..\nTry it again later!`)], ephemeral: true });
-                console.log(`Error while ${int.commandName} command:\n${err}`);
+                await int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${int.commandName}** an error occured..\nAnyway, **try again** later!`)], ephemeral: true });
+                await console.log(`!ERROR! While processing ${int.commandName} command\n${err}`);
             }
         }
     }
@@ -40,33 +42,32 @@ client.on(Events.InteractionCreate, async (int) => {
 
 const rest = new REST().setToken(token);
 client.commandsInfo = new Collection();
+client.distube = distube;
 async function loadCommands(){
     const commands = [];
     for (const file of fs.readdirSync("./Commands")){
+        delete require.cache[require.resolve(`./Commands/${file}`)];
         const command = require(`./Commands/${file}`);
         if ("data" in command){
             await commands.push(command.data.toJSON());
             await client.commandsInfo.set(command.name, command);
         }
     }
-    rest.put(
-        Routes.applicationCommands(clientid),
-        { body: [] }
-    );
     console.log(`Loading ${commands.length} command(s)..`);
-    const data = rest.put(
-        Routes.applicationCommands(clientid),
-        { body: commands }
-    );
-    console.log(`Loaded ${data.length} command(s)!`);
+    /*client.guilds.cache.forEach(async guild => {
+        await rest.put(Routes.applicationGuildCommands(clientid, guild.id), { body: [] }).catch(async err => await console.log(`!ERROR! While erasing commands on specific guild ${guild.name} [${guild.id}]..\n\n${err}`));
+    });
+    var data = await rest.put(Routes.applicationCommands(clientid), { body: [] }).catch(async err => await console.log(`!ERROR! While erasing commands..\n\n${err}`));*/
+    var error = false;
+    const data = await rest.put(Routes.applicationCommands(clientid), { body: commands }).catch(async err => {
+        await console.log(`!ERROR! While loading commands..\n${err}`);
+        error = true;
+    });
+    await console.log(`${error ? `\n` : `Loaded ${data.length} command(s)!\n`}`)
 }
 
 client.once(Events.ClientReady, () => {
-    console.log(`
-    < ${new Date(Date.now()).toLocaleDateString()} >
-    ${client.user.displayName} ready!
-    `);
+    console.log(`\n< ${new Date(new Date().getTime())} >\n< Discord Bot ${client.user.displayName} successfully turned on! >\n`);
     loadCommands();
 });
-client.destroy();
 client.login(token);
