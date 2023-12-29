@@ -8,10 +8,10 @@ const data = new SlashCommandBuilder()
 
 function execute(client, int){
     if (!client.distube.getQueue(int))
-        int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nMy **queue is empty**, **add songs** to it first!\n`)], ephemeral: true });
+        int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nMy **queue is empty**, **add songs** to it first!`)] });
     else{
         if (client.distube.getQueue(int).playing)
-            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nMy **queue is already** playing!\n`)], ephemeral: true });
+            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nMy **queue is already** playing!`)] });
         else{
             client.distube.getQueue(int).resume();
             int.editReply({ embeds: [getBasicEmbed(client, "success", "(▶️) Resume", `Queue was successfully resumed by ${int.member}!`)]});

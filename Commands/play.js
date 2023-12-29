@@ -23,12 +23,12 @@ const data = new SlashCommandBuilder()
     .setRequired(false)
     .addChoices(
         { name: "video", value: "video" },
-        { name: "playlist", value: "playlist" },
+        { name: "playlist", value: "playlist" }
     ));
 
-function execute(client, int){
+async function execute(client, int){
     if (int.member.voice.channel == null && client.distube.getQueue(int) == undefined)
-        int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have to be **joined in voice** to use this command!\n(I have to **be playin** something!)`)], ephemeral: true });
+        int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have to be **joined in voice** to use this command!\n(I have to **be playin** something!)`)] });
     else{
         var voiceChannel;
         if (client.distube.getQueue(int) != undefined)
@@ -36,18 +36,21 @@ function execute(client, int){
         else
             voiceChannel = int.member.voice.channel;
         if (!int.options.getInteger("limit")){
-            int.editReply({ embeds: [getBasicEmbed(client, "random", "(🔎) Searching", `You wanted to search: ${int.options.getString("media")}`)]});
+            int.editReply({ embeds: [getBasicEmbed(client, "random", "(🔎) Searching", `You wanted to search: ${int.options.getString("media")}`)] });
             client.distube.play(voiceChannel, int.options.getString("media"), { member: int.member, textChannel: int.channel });
         }
         else{
             var cache = JSON.parse(fs.readFileSync("Configs/cache.json", "utf-8"));
             if (int.guild.id.toString() in cache)
                 if (int.member.id.toString() in cache[int.guild.id])
-                    return int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have an **on going search** request!`)], ephemeral: true });
+                    return int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have an **on going search** request!`)] });
             const limit = int.options.getInteger("limit");
             if (int.options.getString("type") == "playlist"){
-                const result = client.distube.search(int.options.getString("media"), { limit: limit, type: SearchResultType.PLAYLIST });
-                const msg = int.editReply({ embeds: [getDistubeEmbed(client, "searchResultList", int, result)] });
+                const result = await client.distube.search(int.options.getString("media"), { limit: limit, type: SearchResultType.PLAYLIST }).catch(err => {
+                    int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nSomething happened..\nTry again later!`)] });
+                    console.log(`!ERROR! Unknown DisTube\n${err}\n`);
+                });
+                await int.editReply({ embeds: [getDistubeEmbed(client, "searchResultList", int, result)] });
                 var cache = JSON.parse(fs.readFileSync("Configs/cache.json", "utf-8"));
                 if (!cache[int.guild.id])
                     cache[int.guild.id] = {
@@ -63,15 +66,18 @@ function execute(client, int){
                         if (cache[int.guild.id][int.member.id]){
                             delete cache[int.guild.id][int.member.id];
                             fs.writeFileSync("Configs/cache.json", JSON.stringify(cache, null, 2), "utf-8");
-                            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have not **answered search** request!\n(Request **was** terminated!)`)], ephemeral: true });
+                            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have not **answered search** request!\n(Request **was** terminated!)`)] });
                         }
                     }
 
                 }, 30000);
             }
             else{
-                const result = client.distube.search(int.options.getString("media"), { limit: limit, type: SearchResultType.VIDEO });
-                const msg = int.editReply({ embeds: [getDistubeEmbed(client, "searchResultSong", int, result)] });
+                const result = await client.distube.search(int.options.getString("media"), { limit: limit, type: SearchResultType.VIDEO }).catch((err) => {
+                    int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nSomething happened..\nTry again later!`)] });
+                    console.log(`!ERROR! Unknown DisTube\n${err}\n`);
+                });
+                await int.editReply({ embeds: [getDistubeEmbed(client, "searchResultSong", int, result)], ephemeral: false });
                 var cache = JSON.parse(fs.readFileSync("Configs/cache.json", "utf-8"));
                 if (!cache[int.guild.id])
                     cache[int.guild.id] = {
@@ -87,7 +93,7 @@ function execute(client, int){
                         if (cache[int.guild.id][int.member.id]){
                             delete cache[int.guild.id][int.member.id];
                             fs.writeFileSync("Configs/cache.json", JSON.stringify(cache, null, 2), "utf-8");
-                            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have not **answered search** request!\n(Request **was** terminated!)`)], ephemeral: true });
+                            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have not **answered search** request!\n(Request **was** terminated!)`)] });
                         }
                     }
 

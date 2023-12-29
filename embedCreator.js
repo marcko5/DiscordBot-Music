@@ -8,6 +8,19 @@ function getRandomColor(){
     ];
     return colors[Math.floor(Math.random() * colors.length)];
 }
+function getFormattedNumber(string){
+    return string.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+function getFormattedTime(number){
+    if (!isNaN(number)){
+        var minutes = Math.floor(number / 60);
+        var hours = Math.floor(minutes / 60);
+        minutes = minutes - hours * 60;
+        var seconds = number - hours * 3600 - minutes * 60;
+        return `${hours > 0 ? hours > 9 ? `${hours}:` : `0${hours}:` : ""}${minutes > 9 ? `${minutes}:` : `0${minutes}:`}${seconds > 9 ? `${seconds}` : `0${seconds}`}`;
+    }
+    return "00:00";
+}
 
 function getBasicEmbed(client, mode, title, text){
     if (mode == "error"){
@@ -43,7 +56,7 @@ function getDistubeEmbed(client, mode, queue, song){
         .setTitle(`(▶️) Playing New Song`)
         .addFields(
             { name: " ", value: `[${song.name}](${song.url})`},
-            { name: " ", value: ".၊၊II၊I။IIII။‌‌‌‌‌၊၊II၊I။IIII။‌‌‌‌‌၊I၊၊III၊I။IIII။‌‌‌‌‌၊I၊၊II၊I၊I။I၊I။IIII။‌‌‌‌‌၊I."},
+            { name: " ", value: "၊၊II၊I။IIII။‌‌‌‌‌၊၊II၊I။IIII။‌‌‌‌‌၊I၊၊III၊I။II၊I။II။‌‌‌‌‌၊I၊၊II၊I၊I။I၊I။IIII။‌‌‌‌‌၊I"},
             { name: " ", value: `${queue.formattedCurrentTime} ─────●───────────── ${song.formattedDuration}`},
             { name: " ", value: `By: ${song.member}`}
         )
@@ -57,8 +70,7 @@ function getDistubeEmbed(client, mode, queue, song){
         .setTitle(`(✨) Adding New Song`)
         .addFields(
             { name: " ", value: `[${song.name}](${song.url})`},
-            { name: " ", value: `👀: ${song.views} | ${song.age_restricted ? `🔞: Age Restricted` : `👶: No Restriction`}`},
-            { name: " ", value: `👍: ${song.likes ? song.likes : `Hidden`} | 👎: ${song.dislikes ? song.dislikes : `Hidden`}`},
+            { name: " ", value: `👀: ${getFormattedNumber(song.views)}`},
             { name: " ", value: `00:00 ─────●───────────── ${song.formattedDuration}`},
             { name: " ", value: `By: ${song.member}`}
         )
@@ -130,5 +142,7 @@ function getDistubeEmbed(client, mode, queue, song){
 
 module.exports = {
     getBasicEmbed,
-    getDistubeEmbed
+    getDistubeEmbed,
+    getFormattedNumber,
+    getFormattedTime
 };

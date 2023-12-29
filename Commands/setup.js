@@ -19,7 +19,7 @@ const data = new SlashCommandBuilder()
 
 function execute(client, int){
     if (!int.member.permissions.has("ADMINISTRATOR"))
-        int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have to be **ADMINISTRATOR** to use this command!`)], ephemeral: true });
+        int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have to be **ADMINISTRATOR** to use this command!`)] });
     else{
         var rooms = JSON.parse(fs.readFileSync("Configs/rooms.json", "utf-8"));
         rooms[int.guild.id] = {
@@ -29,10 +29,10 @@ function execute(client, int){
         }
         try{
             fs.writeFileSync("Configs/rooms.json", JSON.stringify(rooms, null, 2), "utf-8");
-            int.editReply({ embeds: [getBasicEmbed(client, "success", "(🚧) Setup", `I've been **successfully setted up** on this server!\n\nMain command room is ${int.options.getChannel("command")}\nMain info room is ${int.options.getChannel("info")}`)], ephemeral: true });
+            int.editReply({ embeds: [getBasicEmbed(client, "success", "(🚧) Setup", `I've been **successfully set up** on this server!\n\nMain command room is ${int.options.getChannel("command")}\nMain info room is ${int.options.getChannel("info")}`)] });
         }
         catch{
-            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nCould **not save** configuration!`)], ephemeral: true });
+            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nCould **not save** configuration!`)] });
         }
     }
 }

@@ -8,13 +8,13 @@ const data = new SlashCommandBuilder()
 
 function execute(client, int){
     if (!client.distube.getQueue(int))
-        int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nMy **queue is empty**, **add songs** to it first!\n`)], ephemeral: true });
+        int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nMy **queue is empty**, **add songs** to it first!`)] });
     else{
-        if (client.distube.getQueue(int).playing)
-            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nMy **queue is already** playing!\n`)], ephemeral: true });
+        if (client.distube.getQueue(int).songs.lenght == 1)
+            int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nThere **is not a next song** in queue!`)] });
         else{
             client.distube.getQueue(int).skip();
-            int.editReply({ embeds: [getBasicEmbed(client, "success", "(⏩) Next", `Playing next song by ${int.member}!`)]});
+            int.editReply({ embeds: [getBasicEmbed(client, "success", "(⏩) Next", `Playing next song by ${int.member}!`)] });
         }
     }
 }
