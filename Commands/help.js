@@ -30,9 +30,12 @@ function process(client, int){
     if (!int.options.getString("command")){
         var commands = { };
         for (const [name, value] of client.commands.entries()) {
-            if (!commands[value.help.section])
+            try{
+                if (!commands[value.help.section])
                 commands[value.help.section] = [];
-            commands[value.help.section].push({ name: name, description: value.help.description });
+                commands[value.help.section].push({ name: name, description: value.help.description });
+            }
+            catch { }
         }
         var text = "";
         for (const [section, value] of Object.entries(commands)){
