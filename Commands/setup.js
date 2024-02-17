@@ -3,7 +3,7 @@ const fs = require("fs");
 const { SlashCommandBuilder, ChannelType } = require("discord.js");
 const { getBasicEmbed } = require("../embedCreator.js");
 
-const data = new SlashCommandBuilder()
+const command = new SlashCommandBuilder()
 .setName(path.basename(__filename).replace(".js", ""))
 .setDescription("Sets up default channels 🚧")
 .addChannelOption(option =>
@@ -17,7 +17,13 @@ const data = new SlashCommandBuilder()
     .setRequired(true)
     .addChannelTypes(ChannelType.GuildText));
 
-function execute(client, int){
+const help = {
+    section: "Commands 💬",
+    description: command.description,
+    message: `Section: \`${path.basename(__filename).replace(".js", "")}\`..\n> ${command.description} via arguments:\n> - With __command__ you can set main command channel!\n> - With __info__ you can set main info channel!\n\nREQUIREMENT: You have to have ADMINISTRATOR permission!\nTIP: Set this before using me!`
+};
+
+function process(client, int){
     if (!int.member.permissions.has("ADMINISTRATOR"))
         int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have to be **ADMINISTRATOR** to use this command!`)] });
     else{
@@ -38,6 +44,7 @@ function execute(client, int){
 }
 
 module.exports = {
-    data,
-    execute
+    command,
+    help,
+    process
 }

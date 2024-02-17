@@ -4,7 +4,7 @@ const { getBasicEmbed, getDistubeEmbed } = require("../embedCreator.js");
 const { SearchResultType } = require("distube");
 const fs = require("fs");
 
-const data = new SlashCommandBuilder()
+const command = new SlashCommandBuilder()
 .setName(path.basename(__filename).replace(".js", ""))
 .setDescription("Plays song or playlist ▶️")
 .addStringOption(option =>
@@ -26,7 +26,13 @@ const data = new SlashCommandBuilder()
         { name: "playlist", value: "playlist" }
     ));
 
-async function execute(client, int){
+const help = {
+    section: "Commands 💬",
+    description: command.description,
+    message: `Section: \`${path.basename(__filename).replace(".js", "")}\`..\n> ${command.description} via arguments:\n> - __media__ can be URL or name! (REQUIRED)\n> - __limit__ is number from 3 to 30, you can search multiple variants of media with this!\n> - __type__ is VIDEO or PLAYLIST, it defines if you want to search video or playlist! (DEFAULT VIDEO)\n\nSEARCH: When you use limit option, you get list of results. You can answer with one number ||(for example 6)|| or as multiple numbers ||(for example 1,3,5)||.\nREQUIREMENT: Queue has to be playing!\nTIP: If you can't find your song, try the search via limit variant!`
+};
+
+async function process(client, int){
     if (int.member.voice.channel == null && client.distube.getQueue(int) == undefined)
         int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have to be **joined in voice** to use this command!\n(I have to **be playin** something!)`)] });
     else{
@@ -46,9 +52,9 @@ async function execute(client, int){
                     return int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nYou have an **on going search** request!`)] });
             const limit = int.options.getInteger("limit");
             if (int.options.getString("type") == "playlist"){
-                const result = await client.distube.search(int.options.getString("media"), { limit: limit, type: SearchResultType.PLAYLIST }).catch(err => {
-                    int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nSomething happened..\nTry again later!`)] });
-                    console.log(`!ERROR! Unknown DisTube\n${err}\n`);
+                const result = await client.distube.search(int.options.getString("media"), { limit: limit, type: SearchResultType.PLAYLIST }).catch(async (err) => {
+                    await int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nSomething happened..\nTry again later!`)] });
+                    return console.log(`!ERROR! Unknown DisTube\n${err}\n`);
                 });
                 await int.editReply({ embeds: [getDistubeEmbed(client, "searchResultList", int, result)] });
                 var cache = JSON.parse(fs.readFileSync("Configs/cache.json", "utf-8"));
@@ -73,9 +79,9 @@ async function execute(client, int){
                 }, 30000);
             }
             else{
-                const result = await client.distube.search(int.options.getString("media"), { limit: limit, type: SearchResultType.VIDEO }).catch((err) => {
-                    int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nSomething happened..\nTry again later!`)] });
-                    console.log(`!ERROR! Unknown DisTube\n${err}\n`);
+                const result = await client.distube.search(int.options.getString("media"), { limit: limit, type: SearchResultType.VIDEO }).catch(async (err) => {
+                    await int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nSomething happened..\nTry again later!`)] });
+                    return console.log(`!ERROR! Unknown DisTube\n${err}\n`);
                 });
                 await int.editReply({ embeds: [getDistubeEmbed(client, "searchResultSong", int, result)], ephemeral: false });
                 var cache = JSON.parse(fs.readFileSync("Configs/cache.json", "utf-8"));
@@ -104,6 +110,7 @@ async function execute(client, int){
 }
 
 module.exports = {
-    data,
-    execute
+    command,
+    help,
+    process
 }

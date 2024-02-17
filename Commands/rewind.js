@@ -1,24 +1,33 @@
-const path = require('path');
+const path = require("path");
 const { SlashCommandBuilder } = require("discord.js");
 const { getBasicEmbed, getFormattedTime } = require("../embedCreator.js");
 
-const data = new SlashCommandBuilder()
+const command = new SlashCommandBuilder()
 .setName(path.basename(__filename).replace(".js", ""))
 .setDescription("Forwards current song ⏩")
 .addIntegerOption(option =>
     option.setName("seconds")
     .setRequired(false)
-    .setDescription("Type number of seconds.. ✏️"))
+    .setDescription("Type number of seconds.. ✏️")
+    .setMinValue(1))
 .addIntegerOption(option =>
     option.setName("minutes")
     .setRequired(false)
-    .setDescription("Type number of minutes.. ✏️"))
+    .setDescription("Type number of minutes.. ✏️")
+    .setMinValue(1))
 .addIntegerOption(option =>
     option.setName("hours")
     .setRequired(false)
-    .setDescription("Type number of hours.. ✏️"))
+    .setDescription("Type number of hours.. ✏️")
+    .setMinValue(1));
 
-function execute(client, int){
+const help = {
+    section: "Commands 💬",
+    description: command.description,
+    message: `Section: \`${path.basename(__filename).replace(".js", "")}\`..\n> ${command.description} via arguments:\n> - With __seconds__ you can rewind by seconds!\n> - With __minutes__ you can rewind by minutes!\n> - With __hours__ you can rewind by hours!\n\nREQUIREMENT: Queue has to be playing!\nTIP: Atleast one argument have to be set!`
+};
+
+function process(client, int){
     if (!client.distube.getQueue(int))
         int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nMy **queue is empty**, **add songs** to it first!`)] });
     else{
@@ -33,6 +42,7 @@ function execute(client, int){
 }
 
 module.exports = {
-    data,
-    execute
+    command,
+    help,
+    process
 }

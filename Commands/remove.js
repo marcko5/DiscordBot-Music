@@ -1,17 +1,23 @@
-const path = require('path');
+const path = require("path");
 const { SlashCommandBuilder } = require("discord.js");
 const { getBasicEmbed } = require("../embedCreator.js");
 
-const data = new SlashCommandBuilder()
+const command = new SlashCommandBuilder()
 .setName(path.basename(__filename).replace(".js", ""))
 .setDescription("Removes song from queue 🗑️")
 .addIntegerOption(option =>
     option.setName("index")
     .setRequired(true)
     .setDescription("Type index of songs you want to remove.. ✏️")
-    .setMinValue(1))
+    .setMinValue(1));
 
-function execute(client, int){
+const help = {
+    section: "Commands 💬",
+    description: command.description,
+    message: `Section: \`${path.basename(__filename).replace(".js", "")}\`..\n> ${command.description} via argument:\n> - With __index__ you can remove specific song from queue!\n\nREQUIREMENT: Queue has to be playing!\nTIP: The index argument is required!`
+};
+
+function process(client, int){
     if (!client.distube.getQueue(int))
         int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${path.basename(__filename).replace(".js", "")}** an error occured..\nMy **queue is empty**, **add songs** to it first!`)] });
     else{
@@ -34,6 +40,7 @@ function execute(client, int){
 }
 
 module.exports = {
-    data,
-    execute
+    command,
+    help,
+    process
 }
