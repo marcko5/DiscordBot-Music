@@ -45,4 +45,7 @@ DONE:
 - github🛠️
 - help💡
 
-TO-DO:
+INSTALATION:
+- create .env file to root directory (the directory where's index.js)
+- type TOKEN=<your_bot_token> in .env
+- type CLIENTID=<your_bot_id> in .env
