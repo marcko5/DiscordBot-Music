@@ -15,6 +15,7 @@ Packages:
 - ffmpeg-static
 - dotenv
 - fs
+- path
 
 DONE:
 - play([int], [str])▶️
