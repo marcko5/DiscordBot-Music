@@ -288,7 +288,7 @@ async function loadCommands(){
 }
 function saveError(error){
     try{
-        fs.writeFileSync("Configs/error.log", `[${new Date(new Date().getTime())}]\n${error.toString()}`/*${error?.message ? "\n"+error.message : ""}${error?.data ? "\n"+error.data : ""}${error?.response ? "\n"+error.response : ""}*/+`\n\n`, { flag: "a+" });
+        fs.writeFileSync("Configs/global.log", `[${new Date(new Date().getTime())}]\n${error.toString()}`/*${error?.message ? "\n"+error.message : ""}${error?.data ? "\n"+error.data : ""}${error?.response ? "\n"+error.response : ""}*/+`\n\n`, { flag: "a+" });
     }
     catch{
         console.log(`\n\n!!! FATAL ERROR !!!\nCan't write inside ERROR LOG FILE!\nFile /Configs/error.log couldn't be found!\nFile /Configs/error.log couldn't be edited!\n${err}\n\n`);
@@ -348,6 +348,7 @@ distube
     });
 
 client.once(Events.ClientReady, () => {
+    saveError(`Discord Bot ${client.user.displayName} successfully turned on!`);
     console.log(`\n< ${new Date(new Date().getTime())} >\n< Discord Bot ${client.user.displayName} successfully turned on! >\n`);
     client.user.setActivity("Type /help for help 💡", { type: Discord.ActivityType.STREAMING, url: "https://github.com/marcko5/DiscordBot-Music" });
     try{
