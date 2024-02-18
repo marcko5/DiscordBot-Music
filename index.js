@@ -35,7 +35,19 @@ client.distube = distube;
 
 client.on(Events.InteractionCreate, async (int) => {
     if (!int.user.bot && int.isCommand){
-        await int.deferReply();
+        try{
+            await int.deferReply();
+        }
+        catch(err){
+            try{
+                await int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${int.commandName}** an error occured..\nAnyway, **try again** later!`)] });
+            }
+            catch{
+                await int.reply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${int.commandName}** an error occured..\nAnyway, **try again** later!`)] });
+            }
+            console.log(`!ERROR! While processing ${int.commandName} command\n${err}\n`);
+            await saveError(err);
+        }
         if (int.commandName == "setup"){
             const command = client.commands.get(int.commandName);
             if (command){
