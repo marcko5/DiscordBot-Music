@@ -326,31 +326,32 @@ function saveError(error){
     await console.log(`${error ? `\n` : `Loaded ${data.length} command(s)!\n`}`)
 }*/
 
-/*function getChannel(queue){
+function getChannel(queue){
     let rooms = JSON.parse(fs.readFileSync("Configs/rooms.json", "utf-8"));
     if (queue.textChannel.guild.channels.cache.has(rooms[queue.textChannel.guild.id].info))
         return queue.textChannel.guild.channels.cache.get(rooms[queue.textChannel.guild.id].info);
     return queue.textChannel;
-}*/
+}
+
 distube
     .on("playSong", (queue, song) => {
-        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "playSong", queue, song)] })
+        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "playSong", queue, song)] })
     })
     .on("addSong", (queue, song) => {
-        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "addSong", queue, song)] })
+        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "addSong", queue, song)] })
     })
     .on("addList", (queue, list) => {
-        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "addList", queue, list)] })
+        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "addList", queue, list)] })
     })
     .on("empty", (queue) => {
-        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "empty", null, null)] });
+        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "empty", null, null)] });
     })
     .on("finish", (queue) => {
-        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "empty", null, null)] });
+        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "empty", null, null)] });
     })
     .on("error", (queue, error) => {
         try {
-            /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "error", "Unknown error?!\nCall administrator.. :(", null)] });
+            getChannel(queue).send({ embeds: [getDistubeEmbed(client, "error", "Unknown error?!\nCall administrator.. :(", null)] });
         } 
         catch (error){ 
             console.log(`!ERROR! Error message wasn't even sent!\n${error}\n`);
