@@ -21,13 +21,6 @@ function getFormattedTime(number){
     }
     return "00:00";
 }
-function getSplittedQueue(queue){
-    var output = [];
-    for (var i = 0; i < queue.songs.length; i += 30){
-        output.push(queue.songs.slice(i, i+30));
-    }
-    return output;
-}
 
 function getBasicEmbed(client, mode, title, text){
     if (mode == "error"){
@@ -154,30 +147,53 @@ function getDistubeEmbed(client, mode, queue, song){
         .setFooter({ text: `Maybe try /help for help! 💡`, iconURL: client.user.displayAvatarURL() });
     }
     else if (mode == "sendQueue"){
-        var output = [];
-        var splitted = getSplittedQueue(queue);
-        for (var i = 0; i < splitted.length; i++){
-            var songs = splitted[i];
-            var text = songs
-            .map((s, j) => `[**${j+1+(i)*30}**] [${s.name}](${s.url}) (\`${s.formattedDuration}\`) <${s.member}>`)
-            .join("\n");
-            if (i == 0){
-                output.push(new EmbedBuilder()
-                .setColor(getRandomColor())
-                .setTitle(`(📄) Queue${splitted.length > 1 ? ` (${i+1}/${splitted.length})` : ""}`)
-                .setDescription(`**Currently Playing**:\n> 🌐: [${song.name}](${song.url})\n> 🕒: \`${queue.formattedCurrentTime}\` - ${song.formattedDuration}\n> 👀: ${song.views ? getFormattedNumber(song.views) : "Hidden"}\n> 👤: ${song.member}\n\n**Queue Informations**:\n> ${queue.playing ? "▶️: Playing" : "⏸️: Paused"}\n> 🔁: Repeat ${queue.repeatMode == 0 ? "Off" : queue.repeatMode == 1 ? "Song" : "Queue"}\n> 🤖: Autoplay ${queue.autoplay ? "On" : "Off"}\n> 🕒: \`${queue.formattedCurrentTime}\` - ${queue.formattedDuration}\n> 🔊: ${queue.volume}%${queue.filters.size > 0 ? `\n> 📦: ${queue.filters.names.join(", ")}` : ""}${songs.length > 1 ? `\n\n${text}` : ""}`)
-                .setTimestamp()
-                .setImage(song.thumbnail)
-                .setFooter({ text: `Maybe try /help for help! 💡`, iconURL: client.user.displayAvatarURL() }))
+        const output = [];
+        var content = [`**Currently Playing**:\n> 🌐: [${song.name}](${song.url})\n> 🕒: \`${queue.formattedCurrentTime}\` - ${song.formattedDuration}\n> 👀: ${song.views ? getFormattedNumber(song.views) : "Hidden"}\n> 👤: ${song.member}\n\n**Queue Informations**:\n> ${queue.playing ? "▶️: Playing" : "⏸️: Paused"}\n> 🔁: Repeat ${queue.repeatMode == 0 ? "Off" : queue.repeatMode == 1 ? "Song" : "Queue"}\n> 🤖: Autoplay ${queue.autoplay ? "On" : "Off"}\n> 🕒: \`${queue.formattedCurrentTime}\` - ${queue.formattedDuration}\n> 🔊: ${queue.volume}%${queue.filters?.size || 0 > 0 ? `\n> 📦: ${queue.filters.names.join(", ")}` : ""}`];
+        var text = queue.songs.map((s, i) => `[**${i+1}**] [${s.name}](${s.url}) (\`${s.formattedDuration}\`) <${s.member}>`).join("\n");
+        for (const x of text.split("\n")){
+            if (content.length == 0){
+                content.push(x);
             }
             else{
-                output.push(new EmbedBuilder()
-                .setColor(getRandomColor())
-                .setTitle(`(📄) Queue (${i+1}/${splitted.length})`)
-                .setDescription(`${text}`)
-                .setTimestamp()
-                .setFooter({ text: `Maybe try /help for help! 💡`, iconURL: client.user.displayAvatarURL() }))
+                if ((content[content.length-1]+x).length <= 4096)
+                    content[content.length-1] += "\n"+x;
+                else
+                    content.push(x);
             }
+        }
+        for (let i = 0; i < content.length; i++){
+            output.push(new EmbedBuilder()
+                .setColor(getRandomColor())
+                .setTitle(`(📄) Queue ${content.length > 1 ? `${i+1}/${content.length}` : ""}`)
+                .setDescription(`${content[i]}`)
+                .setTimestamp()
+                .setFooter({ text: `Replay songs via /replay command! 💡`, iconURL: client.user.displayAvatarURL() }))
+        }
+        return output;
+    }
+    else if (mode == "sendHistory"){
+        const output = [];
+        var content = [];
+        var text = queue.map((s, i) => `[**${i+1}**] [${s.name}](${s.url}) (\`${s.formattedDuration}\`) <${s.member}>`).join("\n");
+        for (const x of text.split("\n")){
+            if (content.length == 0){
+                content.push(x);
+            }
+            else{
+                if ((content[content.length-1]+x).length <= 4096)
+                    content[content.length-1] += "\n"+x;
+                else
+                    content.push(x);
+            }
+        }
+        for (let i = 0; i < content.length; i++){
+            output.push(new EmbedBuilder()
+                .setColor(getRandomColor())
+                .setTitle(`(📄) History ${content.length > 1 ? `${i+1}/${content.length}` : ""}`)
+                .setDescription(`${content[i]}`)
+                .setTimestamp()
+                .setFooter({ text: `Replay songs via /replay command! 💡`, iconURL: client.user.displayAvatarURL() }));
+            text = "";
         }
         return output;
     }
@@ -185,7 +201,7 @@ function getDistubeEmbed(client, mode, queue, song){
         return new EmbedBuilder()
         .setColor(getRandomColor())
         .setTitle(`(▶️) Playing`)
-        .setDescription(`**Currently Playing**:\n> 🌐: [${song.name}](${song.url})\n> 🕒: \`${queue.formattedCurrentTime}\` - ${song.formattedDuration}\n> 👀: ${song.views ? getFormattedNumber(song.views) : "Hidden"}\n> 👤: ${song.member}\n\n**Queue Informations**:\n> ${queue.playing ? "▶️: Playing" : "⏸️: Paused"}\n> 🔁: Repeat ${queue.repeatMode == 0 ? "Off" : queue.repeatMode == 1 ? "Song" : "Queue"}\n> 🤖: Autoplay ${queue.autoplay ? "On" : "Off"}\n> 🕒: \`${queue.formattedCurrentTime}\` - ${queue.formattedDuration}\n> 🔊: ${queue.volume}%${queue.filters.size > 0 ? `\n> 📦: ${queue.filters.names.join(", ")}` : ""}`)
+        .setDescription(`**Currently Playing**:\n> 🌐: [${song.name}](${song.url})\n> 🕒: \`${queue.formattedCurrentTime}\` - ${song.formattedDuration}\n> 👀: ${song.views ? getFormattedNumber(song.views) : "Hidden"}\n> 👤: ${song.member}\n\n**Queue Informations**:\n> ${queue.playing ? "▶️: Playing" : "⏸️: Paused"}\n> 🔁: Repeat ${queue.repeatMode == 0 ? "Off" : queue.repeatMode == 1 ? "Song" : "Queue"}\n> 🤖: Autoplay ${queue.autoplay ? "On" : "Off"}\n> 🕒: \`${queue.formattedCurrentTime}\` - ${queue.formattedDuration}\n> 🔊: ${queue.volume}%${queue.filters?.size || 0 > 0 ? `\n> 📦: ${queue.filters.names.join(", ")}` : ""}`)
         .setTimestamp()
         .setImage(song.thumbnail)
         .setFooter({ text: `Maybe try /help for help! 💡`, iconURL: client.user.displayAvatarURL() })

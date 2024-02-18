@@ -1,3 +1,10 @@
+// TODO: FIX ERROR
+
+
+
+
+
+
 require("dotenv").config();
 const token = process.env.TOKEN;
 const clientid = process.env.CLIENTID;
@@ -22,7 +29,7 @@ const distube = new DisTube(client, {
     leaveOnFinish: true,
     leaveOnStop: true,
     savePreviousSongs: true,
-    plugins: [new DeezerPlugin(), new SpotifyPlugin({ emitEventsAfterFetching: true }), new SoundCloudPlugin(), new YtDlpPlugin({ update: false })]
+    plugins: [new DeezerPlugin(), new SpotifyPlugin(), new SoundCloudPlugin(), new YtDlpPlugin({ update: false })]
 });
 client.distube = distube;
 
@@ -38,6 +45,7 @@ client.on(Events.InteractionCreate, async (int) => {
                 catch(err){
                     await int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${int.commandName}** an error occured..\nAnyway, **try again** later!`)] });
                     console.log(`!ERROR! While processing ${int.commandName} command\n${err}\n`);
+                    await saveError(err);
                 }
             }
         }
@@ -99,6 +107,7 @@ client.on(Events.InteractionCreate, async (int) => {
                                 catch(err){
                                     await int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${int.commandName}** an error occured..\nAnyway, **try again** later!`)] });
                                     console.log(`!ERROR! While processing ${int.commandName} command\n${err}\n`);
+                                    await saveError(err);
                                 }
                             }
                         }
@@ -269,6 +278,7 @@ async function loadCommands(){
             errorMessage = `!ERROR! While loading commands via REST (${err.toString().replace("\n", ", ")})`;
         else
             errorMessage += `\n!ERROR! While loading commands via REST (${err.toString().replace("\n", ", ")})`;
+        saveError(err);
     });
     if (errorMessage){
         await console.log(errorMessage);
@@ -278,7 +288,7 @@ async function loadCommands(){
 }
 function saveError(error){
     try{
-        fs.writeFileSync("Configs/error.log", `[${new Date(new Date().getTime())}]\n${error}\n\n`, { flag: "a+" });
+        fs.writeFileSync("Configs/error.log", `[${new Date(new Date().getTime())}]\n${error.toString()}`/*${error?.message ? "\n"+error.message : ""}${error?.data ? "\n"+error.data : ""}${error?.response ? "\n"+error.response : ""}*/+`\n\n`, { flag: "a+" });
     }
     catch{
         console.log(`\n\n!!! FATAL ERROR !!!\nCan't write inside ERROR LOG FILE!\nFile /Configs/error.log couldn't be found!\nFile /Configs/error.log couldn't be edited!\n${err}\n\n`);
@@ -332,8 +342,9 @@ distube
         getChannel(queue).send({ embeds: [getDistubeEmbed(client, "empty", null, null)] });
     })
     .on("error", (queue, error) => {
-        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "empty", error, null)] });
-        console.log(`!ERROR! Unknown DisTube\n${err}\n`)
+        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "error", "Unknown error?\nCall administrator.. :(", null)] });
+        console.log(`!ERROR! Unknown DisTube\n${error}\n`);
+        saveError(error);
     });
 
 client.once(Events.ClientReady, () => {
@@ -347,8 +358,9 @@ client.once(Events.ClientReady, () => {
         }
         fs.writeFileSync("Configs/rooms.json", JSON.stringify(rooms, null, 2), "utf-8");
     }
-    catch{
+    catch(err){
         fs.writeFileSync("Configs/rooms.json", JSON.stringify({}, null, 2), "utf-8");
+        saveError(err);
     }
     fs.writeFileSync("Configs/cache.json", JSON.stringify({}, null, 2), "utf-8");
     for(const guild in client.guilds){
