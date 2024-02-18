@@ -1,10 +1,3 @@
-// TODO: FIX ERROR
-
-
-
-
-
-
 require("dotenv").config();
 const token = process.env.TOKEN;
 const clientid = process.env.CLIENTID;
@@ -23,14 +16,18 @@ const { SpotifyPlugin } = require("@distube/spotify");
 const { SoundCloudPlugin } = require("@distube/soundcloud");
 const { YtDlpPlugin } = require("@distube/yt-dlp");
 const { getBasicEmbed, getDistubeEmbed } = require("./embedCreator");
-const { Console } = require("console");
 const distube = new DisTube(client, {
     nsfw: true,
     leaveOnEmpty: true,
     leaveOnFinish: true,
     leaveOnStop: true,
     savePreviousSongs: true,
-    plugins: [new DeezerPlugin(), new SpotifyPlugin({emitEventsAfterFetching: false}), new SoundCloudPlugin(), new YtDlpPlugin({ update: false })]
+    emitNewSongOnly: false,
+    emitAddListWhenCreatingQueue: false,
+    emitAddSongWhenCreatingQueue: false,
+    emptyCooldown: 15,
+    joinNewVoiceChannel: true,
+    plugins: [new DeezerPlugin(), new SpotifyPlugin({ emitEventsAfterFetching: true }), new SoundCloudPlugin(), new YtDlpPlugin({ update: false })]
 });
 client.distube = distube;
 

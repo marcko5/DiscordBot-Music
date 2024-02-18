@@ -148,7 +148,7 @@ function getDistubeEmbed(client, mode, queue, song){
     }
     else if (mode == "sendQueue"){
         const output = [];
-        var content = [`**Currently Playing**:\n> 🌐: [${song.name}](${song.url})\n> 🕒: \`${queue.formattedCurrentTime}\` - ${song.formattedDuration}\n> 👀: ${song.views ? getFormattedNumber(song.views) : "Hidden"}\n> 👤: ${song.member}\n\n**Queue Informations**:\n> ${queue.playing ? "▶️: Playing" : "⏸️: Paused"}\n> 🔁: Repeat ${queue.repeatMode == 0 ? "Off" : queue.repeatMode == 1 ? "Song" : "Queue"}\n> 🤖: Autoplay ${queue.autoplay ? "On" : "Off"}\n> 🕒: \`${queue.formattedCurrentTime}\` - ${queue.formattedDuration}\n> 🔊: ${queue.volume}%${queue.filters?.size || 0 > 0 ? `\n> 📦: ${queue.filters.names.join(", ")}` : ""}`];
+        var content = [`**Currently Playing**:\n> 🌐: [${song.name}](${song.url})\n> 🕒: \`${queue.formattedCurrentTime}\` - ${song.formattedDuration}\n> 👀: ${song.views ? getFormattedNumber(song.views) : "Hidden"}\n> 👤: ${song.member}\n\n**Queue Informations**:\n> ${queue.playing ? "▶️: Playing" : "⏸️: Paused"}\n> 🔁: Repeat ${queue.repeatMode == 0 ? "Off" : queue.repeatMode == 1 ? "Song" : "Queue"}\n> 🤖: Autoplay ${queue.autoplay ? "On" : "Off"}\n> 🕒: \`${queue.formattedCurrentTime}\` - ${queue.formattedDuration}\n> 🔊: ${queue.volume}%${queue.filters?.size || 0 > 0 ? `\n> 📦: ${queue.filters.names.join(", ")}` : ""}\n`];
         var text = queue.songs.map((s, i) => `[**${i+1}**] [${s.name}](${s.url}) (\`${s.formattedDuration}\`) <${s.member}>`).join("\n");
         for (const x of text.split("\n")){
             if (content.length == 0){
