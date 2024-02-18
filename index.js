@@ -23,31 +23,20 @@ const { SpotifyPlugin } = require("@distube/spotify");
 const { SoundCloudPlugin } = require("@distube/soundcloud");
 const { YtDlpPlugin } = require("@distube/yt-dlp");
 const { getBasicEmbed, getDistubeEmbed } = require("./embedCreator");
+const { Console } = require("console");
 const distube = new DisTube(client, {
     nsfw: true,
     leaveOnEmpty: true,
     leaveOnFinish: true,
     leaveOnStop: true,
     savePreviousSongs: true,
-    plugins: [new DeezerPlugin(), new SpotifyPlugin(), new SoundCloudPlugin(), new YtDlpPlugin({ update: false })]
+    plugins: [new DeezerPlugin(), new SpotifyPlugin({emitEventsAfterFetching: false}), new SoundCloudPlugin(), new YtDlpPlugin({ update: false })]
 });
 client.distube = distube;
 
 client.on(Events.InteractionCreate, async (int) => {
     if (!int.user.bot && int.isCommand){
-        try{
-            await int.deferReply();
-        }
-        catch(err){
-            try{
-                await int.editReply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${int.commandName}** an error occured..\nAnyway, **try again** later!`)] });
-            }
-            catch{
-                await int.reply({ embeds: [getBasicEmbed(client, "error", "(❌) Error", `While processing **${int.commandName}** an error occured..\nAnyway, **try again** later!`)] });
-            }
-            console.log(`!ERROR! While processing ${int.commandName} command\n${err}\n`);
-            await saveError(err);
-        }
+        await int.deferReply();
         if (int.commandName == "setup"){
             const command = client.commands.get(int.commandName);
             if (command){
@@ -337,24 +326,35 @@ function saveError(error){
     await console.log(`${error ? `\n` : `Loaded ${data.length} command(s)!\n`}`)
 }*/
 
-function getChannel(queue){
+/*function getChannel(queue){
     let rooms = JSON.parse(fs.readFileSync("Configs/rooms.json", "utf-8"));
     if (queue.textChannel.guild.channels.cache.has(rooms[queue.textChannel.guild.id].info))
         return queue.textChannel.guild.channels.cache.get(rooms[queue.textChannel.guild.id].info);
     return queue.textChannel;
-}
+}*/
 distube
-    .on("playSong", (queue, song) => getChannel(queue).send({ embeds: [getDistubeEmbed(client, "playSong", queue, song)] }))
-    .on("addSong", (queue, song) => queue.textChannel.send({ embeds: [getDistubeEmbed(client, "addSong", queue, song)] }))
-    .on("addList", (queue, list) => queue.textChannel.send({ embeds: [getDistubeEmbed(client, "addList", queue, list)] }))
+    .on("playSong", (queue, song) => {
+        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "playSong", queue, song)] })
+    })
+    .on("addSong", (queue, song) => {
+        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "addSong", queue, song)] })
+    })
+    .on("addList", (queue, list) => {
+        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "addList", queue, list)] })
+    })
     .on("empty", (queue) => {
-        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "empty", null, null)] });
+        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "empty", null, null)] });
     })
     .on("finish", (queue) => {
-        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "empty", null, null)] });
+        /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "empty", null, null)] });
     })
     .on("error", (queue, error) => {
-        getChannel(queue).send({ embeds: [getDistubeEmbed(client, "error", "Unknown error?\nCall administrator.. :(", null)] });
+        try {
+            /*getChannel(queue)*/queue.textChannel.send({ embeds: [getDistubeEmbed(client, "error", "Unknown error?!\nCall administrator.. :(", null)] });
+        } 
+        catch (error){ 
+            console.log(`!ERROR! Error message wasn't even sent!\n${error}\n`);
+        }
         console.log(`!ERROR! Unknown DisTube\n${error}\n`);
         saveError(error);
     });
